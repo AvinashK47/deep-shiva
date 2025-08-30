@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.local
+ai/.venv/
+
+# chroma
+ai/storage/
+
+.vscode/
