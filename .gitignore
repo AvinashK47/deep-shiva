@@ -1,12 +1,11 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.env
-.env.local
-ai/.venv/
+# Dependencies
+/node_modules
+/.pnpm-store
 
-# chroma
-ai/storage/
+.turbo
+/dist
+/.next
+/out
 
-.vscode/
+.vscode
+.DS_Store

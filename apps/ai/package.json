@@ -1,0 +1,14 @@
+{
+  "name": "ai",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt",
+    "dev": "./.venv/bin/python3 -m rag"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0"
+}
