@@ -210,11 +210,20 @@ def interactive_chat(index: VectorStoreIndex) -> None:
             print(f"[error] {e}")
 
 
+# def main() -> None:
+#     configure_llamaindex()
+#     index = build_or_update_index()
+#     interactive_chat(index)
+
+
+# if __name__ == "__main__":
+#     main()
+
+# apps/ai/rag/chat.py
+
 def main() -> None:
-    configure_llamaindex()
-    index = build_or_update_index()
-    interactive_chat(index)
+    pass
 
 
 if __name__ == "__main__":
-    main()
+    pass
