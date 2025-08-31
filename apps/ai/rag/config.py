@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 import os
+from apps.ai.rag.utils import ensure_env_loaded
+
+ensure_env_loaded()
 
 
 @dataclass

@@ -17,7 +17,7 @@ import chromadb
 import re
 
 from config import settings
-from llm_setup import configure_llamaindex
+from apps.ai.rag.llm_setup import configure_llamaindex
 
 STATE_FILE = Path(__file__).resolve().parents[1] / "storage/.ingest_state.json"
 
