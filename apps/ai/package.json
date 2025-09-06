@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "setup": "python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt",
+    "setup": "python3 -m venv .venv && .venv/scripts/activate && ./.venv/bin/pip install -r requirements.txt",
     "dev": "PYTHONPATH=../.. ./.venv/bin/uvicorn apps.ai.ai-server.server:app --reload --port 8000"
   },
   "keywords": [],

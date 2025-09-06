@@ -17,7 +17,7 @@ import chromadb
 import re
 
 from config import settings
-from apps.ai.rag.llm_setup import configure_llamaindex
+from llm_setup import configure_llamaindex
 
 STATE_FILE = Path(__file__).resolve().parents[1] / "storage/.ingest_state.json"
 
@@ -66,13 +66,15 @@ def build_or_update_index() -> VectorStoreIndex:
     os.makedirs(persist_dir, exist_ok=True)
     chroma_client = chromadb.PersistentClient(path=persist_dir)
 
-    # Use a distinct collection name per provider+embedding model to prevent dim conflicts
-    if settings.provider == "ollama":
+    # distinct collection name keyed ONLY by embedding provider+model
+    if settings.embed_provider == "ollama":
         embed_tag = settings.ollama_embed_model
+        embed_prefix = "ollama"
     else:
         embed_tag = settings.openai_embed_model
+        embed_prefix = "openai"
     safe_tag = re.sub(r"[^a-zA-Z0-9_.-]+", "-", embed_tag).lower()
-    collection_name = f"{settings.index_name}-{settings.provider}-{safe_tag}"
+    collection_name = f"{settings.index_name}-{embed_prefix}-{safe_tag}"
 
     collection = chroma_client.get_or_create_collection(collection_name)
     print(f"[ingest] Using Chroma collection: {collection_name}")
@@ -132,12 +134,14 @@ def main() -> None:
     print("[ingest] Starting ingestion…")
     index = build_or_update_index()
     # collection name is deterministic, then query chroma for vector count
-    if settings.provider == "ollama":
+    if settings.embed_provider == "ollama":
         embed_tag = settings.ollama_embed_model
+        embed_prefix = "ollama"
     else:
         embed_tag = settings.openai_embed_model
+        embed_prefix = "openai"
     safe_tag = re.sub(r"[^a-zA-Z0-9_.-]+", "-", embed_tag).lower()
-    collection_name = f"{settings.index_name}-{settings.provider}-{safe_tag}"
+    collection_name = f"{settings.index_name}-{embed_prefix}-{safe_tag}"
 
     try:
         base = Path(__file__).resolve().parents[1]

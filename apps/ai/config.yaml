@@ -1,0 +1,37 @@
+providers:
+  llm_provider: openai        # openai | ollama
+  embed_provider: openai      # openai | ollama
+
+models:
+  openai_model: gpt-4o-mini
+  openai_embed_model: text-embedding-3-small
+  ollama_model: gemma3:4b
+  ollama_embed_model: embeddinggemma:300m
+
+ollama:
+  host: http://localhost:11434
+  request_timeout: 300
+  num_ctx: 4096
+  temperature: 0.2
+
+paths:
+  chroma_path: storage/chroma
+  data_dir: data
+  index_name: default
+
+chat:
+  similarity_threshold: 0.25
+  rag_top_k: 5
+  history_max_turns: 10
+  retry_on_timeouts: 1
+
+prompt:
+  path: system_prompt.txt     # relative to apps/ai
+  text: ""                    # leave empty to use file
+
+weather:
+  past_days: 7
+  forecast_days: 7
+  default_capital_name: Dehradun, Uttarakhand, India
+  default_capital_lat: 30.3165
+  default_capital_lon: 78.0322

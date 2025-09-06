@@ -1,5 +1,5 @@
 import os
-from apps.ai.rag.config import settings
+from config import settings
 
 from llama_index.core import Settings as LlamaSettings
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -9,40 +9,35 @@ from llama_index.llms.ollama import Ollama
 
 
 def configure_llamaindex() -> None:
-    provider = settings.provider
-
-    # Embeddings
-    if provider == "ollama":
-        base_url = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        timeout = float(os.getenv("OLLAMA_REQUEST_TIMEOUT", "180"))
+    # Embeddings selected independently of LLM
+    if settings.embed_provider == "ollama":
         embed_model = OllamaEmbedding(
             model_name=settings.ollama_embed_model,
-            base_url=base_url,
-            request_timeout=timeout,
+            base_url=settings.ollama_host,
+            request_timeout=settings.ollama_request_timeout,
         )
-    else:
-        # default to openai embeddings
+    elif settings.embed_provider == "openai":
         if not settings.openai_api_key:
-            raise RuntimeError("OPENAI_API_KEY not set. Set PROVIDER=ollama to avoid OpenAI.")
+            raise RuntimeError("OPENAI_API_KEY not set but EMBED_PROVIDER=openai. Set OPENAI_API_KEY.")
         embed_model = OpenAIEmbedding(model=settings.openai_embed_model, api_key=settings.openai_api_key)
+    else:
+        raise RuntimeError(f"Unsupported EMBED_PROVIDER: {settings.embed_provider}")
 
-    # LLM
-    if provider == "ollama":
-        base_url = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        timeout = float(os.getenv("OLLAMA_REQUEST_TIMEOUT", "180"))
-        num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "4096"))
-        temperature = float(os.getenv("OLLAMA_TEMPERATURE", "0.2"))
+    # LLM provider
+    if settings.llm_provider == "ollama":
         llm = Ollama(
             model=settings.ollama_model,
-            base_url=base_url,
-            request_timeout=timeout,
-            context_window=num_ctx,
-            temperature=temperature,
+            base_url=settings.ollama_host,
+            request_timeout=settings.ollama_request_timeout,
+            context_window=settings.ollama_num_ctx,
+            temperature=settings.ollama_temperature,
         )
-    else:
+    elif settings.llm_provider == "openai":
         if not settings.openai_api_key:
-            raise RuntimeError("OPENAI_API_KEY not set for OpenAI provider. Set PROVIDER=ollama to use Ollama.")
+            raise RuntimeError("OPENAI_API_KEY not set but LLM_PROVIDER=openai. Set OPENAI_API_KEY or use LLM_PROVIDER=ollama.")
         llm = OpenAI(model=settings.openai_model, api_key=settings.openai_api_key)
+    else:
+        raise RuntimeError(f"Unsupported LLM_PROVIDER: {settings.llm_provider}")
 
     LlamaSettings.embed_model = embed_model
     LlamaSettings.llm = llm

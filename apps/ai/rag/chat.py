@@ -8,10 +8,11 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from utils import ensure_env_loaded
+from config import settings
 ensure_env_loaded()
 from ingest import build_or_update_index
 from llm_setup import configure_llamaindex
-from tools import get_weather_for_place, get_weather_data_for_place, format_weather_response
+from utils import get_weather_for_place, get_weather_data_for_place, format_weather_response
 import re
 
 
@@ -23,7 +24,15 @@ RETRY_ON_TIMEOUTS = int(os.getenv("RETRY_ON_TIMEOUTS", "1"))
 
 def _load_system_prompt() -> str:
     base = BASE_DIR.parent  # ai/
-    path = os.getenv("SYSTEM_PROMPT_PATH")
+    # config.yaml defines prompt.path
+    conf_path = None
+    try:
+        from pathlib import Path as _P
+        # relative to apps/ai
+        conf_path = getattr(settings, "_prompt_path", None)
+    except Exception:
+        pass
+    path = os.getenv("SYSTEM_PROMPT_PATH", conf_path)
     prompt_file = Path(path) if path else (base / "system_prompt.txt")
     if prompt_file.exists():
         try:
@@ -93,7 +102,7 @@ def interactive_chat(index: VectorStoreIndex) -> None:
                     llm = LlamaSettings.llm
                     if llm is not None:
                         prompt = (
-                            "Summarize this weather data in 3-6 concise sentences suitable for a tourist. "
+                            "Summarize this weather data in 3-6 concise sentences suitable for a tourist. Only return the summary, nothing else."
                             "Include today’s conditions briefly, past conditions if relevant and a compact 7-day outlook with temps, rain risk, and wind.\n\n"
                             f"Location: {disp}\n\nData (JSON):\n{wx}\n\nSummary:"
                         )
@@ -185,7 +194,7 @@ def interactive_chat(index: VectorStoreIndex) -> None:
                         attempt += 1
                         continue
                     raise
-            answer = getattr(resp, 'response', str(resp))
+            answer = getattr(resp, 'response', getattr(resp, 'text', str(resp)))
             # retrieval had useful context? if not, fallback to base LLM
             source_nodes = getattr(resp, 'source_nodes', None) or []
             max_score = max((sn.score or 0.0) for sn in source_nodes) if source_nodes else 0.0
@@ -201,7 +210,7 @@ def interactive_chat(index: VectorStoreIndex) -> None:
                         direct = llm.complete(direct_prompt)
                         answer = getattr(direct, 'text', str(direct))
                     except Exception:
-                        # keep our  original answer if direct call fails
+                        # keep our original answer if direct call fails
                         pass
             print(f"Assistant: {answer}\n")
             # save turn to history
@@ -222,8 +231,10 @@ def interactive_chat(index: VectorStoreIndex) -> None:
 # apps/ai/rag/chat.py
 
 def main() -> None:
-    pass
+    configure_llamaindex()
+    index = build_or_update_index()
+    interactive_chat(index)
 
 
 if __name__ == "__main__":
-    pass
+    main()
